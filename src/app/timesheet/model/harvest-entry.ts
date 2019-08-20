@@ -1,8 +1,7 @@
+import {JsonSerializable} from './json-serializable';
+import {UtilsString} from '../../utils/UtilsString';
 
-import {JsonSerializable} from "./json-serializable";
-import {UtilsString} from "../../utils/UtilsString";
-
-export class HarvestEntry extends JsonSerializable{
+export class HarvestEntry extends JsonSerializable {
   id: number;
   user_id: number;
   spent_at: string;
@@ -18,57 +17,61 @@ export class HarvestEntry extends JsonSerializable{
   hours: number;
   timer_started_at: string;
 
+  // tslint:disable-next-line:comment-format
   //https://regex101.com/r/cqsnSc/2
-  readonly jiraTicketRegexp = /^[A-Z0-9]+-[0-9]+(?=\s|:|$)/i;
+  readonly jiraTicketRegexp = /^\[?[A-Z0-9]+-[0-9]+(?=\s|:|)]?$/i;
 
+  // tslint:disable-next-line:comment-format
   //https://regex101.com/r/vKeuu1/3
-  readonly jiraTicketPrefixToRemoveRegexp = /^[A-Z0-9]+-[0-9]+(?:\s+|:\s*|\s*$)/i;
+  readonly jiraTicketPrefixToRemoveRegexp = /^\[?[A-Z0-9]+-[0-9]+(?:\s+|:\s*|\s*)]?$/i;
 
-  public hasJiraTicket = () : boolean => {
+  public hasJiraTicket = (): boolean => {
     return this.jiraTicketRegexp.test(this.notes);
   };
 
-  public getJiraTicket = () : string => {
-    if(this.hasJiraTicket){
+  public getJiraTicket = (): string => {
+    if (this.hasJiraTicket) {
       return this.jiraTicketRegexp.exec(this.notes)[0].toUpperCase();
     }
-    return "";
+    return '';
   };
 
-  public getCommentWithoutJiraTicket = () : string => {
-    if(!this.hasJiraTicket()){
+  public getCommentWithoutJiraTicket = (): string => {
+    if (!this.hasJiraTicket()) {
       return this.getDecodedNotes();
     } else {
-      return this.getDecodedNotes().replace(this.jiraTicketPrefixToRemoveRegexp,"")
+      return this.getDecodedNotes().replace(this.jiraTicketPrefixToRemoveRegexp, '')
     }
   };
 
-  public getDecodedNotes = () : string => {
+  public getDecodedNotes = (): string => {
     return UtilsString.decodeHtmlEntities(this.notes);
   };
 
-  public getTimeInSeconds = () : number => {
+  public getTimeInSeconds = (): number => {
     return this.getTimeInMinutes() * 60;
   };
 
-  //In Harvest time is always represented as hours with 2 decimal digits
-  //To get the correct number of minutes we multiply by 60 and round it to full minutes
-  //For example 2 minutes in Harvest will be represented as 0,03h
+  // In Harvest time is always represented as hours with 2 decimal digits
+  // To get the correct number of minutes we multiply by 60 and round it to full minutes
+  // For example 2 minutes in Harvest will be represented as 0,03h
+  // tslint:disable-next-line:comment-format
   //0.03 * 60 = 1.8 => rounding 1.8 up to 2 minutes
-  //Otherwise the subsequent seconds will not be "full" minutes and resulting Jira minutes will not exactly match!
-  private getTimeInMinutes = () : number => {
-    return Math.round(this.hours * 60);
-  };
-
+  // tslint:disable-next-line:comment-format
   //returns ex. "2017-02-19T09:00:00.000+0100"
-  public getISOStartDate() : string {
-    //input is only date as "2017-02-19"
+  public getISOStartDate(): string {
+    // input is only date as "2017-02-19"
     let isoDateSpentAt = new Date(this.spent_at);
 
     // = 9am with timezone +0100
     isoDateSpentAt.setHours(10);
 
-    //Jira cannot handle Z syntax -> replace it with +0100 timezone
-    return isoDateSpentAt.toISOString().replace("Z", "+0100");
+    // Jira cannot handle Z syntax -> replace it with +0100 timezone
+    return isoDateSpentAt.toISOString().replace('Z', '+0100');
+  };
+
+  // Otherwise the subsequent seconds will not be "full" minutes and resulting Jira minutes will not exactly match!
+  private getTimeInMinutes = (): number => {
+    return Math.round(this.hours * 60);
   };
 }
