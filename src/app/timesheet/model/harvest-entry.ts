@@ -17,13 +17,11 @@ export class HarvestEntry extends JsonSerializable {
   hours: number;
   timer_started_at: string;
 
-  // tslint:disable-next-line:comment-format
-  //https://regex101.com/r/cqsnSc/2
-  readonly jiraTicketRegexp = /^\[?[A-Z0-9]+-[0-9]+(?=\s|:|)]?$/i;
+  // https://regex101.com/r/cqsnSc/2
+  readonly jiraTicketRegexp = /[^\[]?[A-Z0-9]+-[0-9]+(?=\s|:|]|$)/i;
 
-  // tslint:disable-next-line:comment-format
-  //https://regex101.com/r/vKeuu1/3
-  readonly jiraTicketPrefixToRemoveRegexp = /^\[?[A-Z0-9]+-[0-9]+(?:\s+|:\s*|\s*)]?$/i;
+  // https://regex101.com/r/vKeuu1/3
+  readonly jiraTicketPrefixToRemoveRegexp = /^\[?[A-Z0-9]+-[0-9]+(]?|:\s+|:\s*|\s*$)/i;
 
   public hasJiraTicket = (): boolean => {
     return this.jiraTicketRegexp.test(this.notes);
@@ -55,10 +53,9 @@ export class HarvestEntry extends JsonSerializable {
   // In Harvest time is always represented as hours with 2 decimal digits
   // To get the correct number of minutes we multiply by 60 and round it to full minutes
   // For example 2 minutes in Harvest will be represented as 0,03h
-  // tslint:disable-next-line:comment-format
-  //0.03 * 60 = 1.8 => rounding 1.8 up to 2 minutes
-  // tslint:disable-next-line:comment-format
-  //returns ex. "2017-02-19T09:00:00.000+0100"
+  // 0.03 * 60 = 1.8 => rounding 1.8 up to 2 minutes
+
+  // returns ex. "2017-02-19T09:00:00.000+0100"
   public getISOStartDate(): string {
     // input is only date as "2017-02-19"
     let isoDateSpentAt = new Date(this.spent_at);
